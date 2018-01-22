@@ -86,16 +86,7 @@ void loop() {
     proxDetect();
 
     checkSoil();
-    
-    unsigned long currentMillis - millis();
-    
-    if(currentMillis - previousMillis >readingInterval)
-    {
-        previousMillis = currentMillis;
-        
-        sendDataToCCDB(String(soilVal),"int", "moisture_level");
-	
-    }
+
 
 }
 
@@ -109,6 +100,7 @@ void checkSoil() {
         rateSoil(soilVal);
         result(soilVal, count, rate);
         count = 0;
+	sendDataToCCDB(String(soilVal),"int", "moisture_level");
     }
 }
 
