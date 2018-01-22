@@ -1,9 +1,8 @@
 // This #include statement was automatically added by the Particle IDE.
 #include <neopixel.h>
 
-//Particle Photon ID: 3a0038000547343138333038
 
-//defined NeoPixel strip & motion sensor.
+
 #define PIXEL_PIN D0
 #define PIXEL_COUNT 9
 #define PIXEL_TYPE WS2812B
@@ -11,10 +10,12 @@
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_PIN);
 
-// integer for counting motion sensor activations
+// int i;
+// int t;
 int count = 0;
 
-// converting number of neopixels to integer
+// int wait = 500;
+
 int pixels = PIXEL_COUNT;
 
 // soil moisture sensor
@@ -22,10 +23,11 @@ int soilVal = 0; // maxx value = 4095
 int soilPin1 = A0;
 int soilPower = D2;
 
-// number of pixels lit up for feedback
+// number of pixels lit up
 int rate;
 
 // rating states
+
 int state1 = 0000; //      < 899
 int state2 = 1300; // 900 < 1699
 int state3 = 2000; // 1700 < 2599
@@ -40,6 +42,8 @@ int state9 = 3050; // 3050 <
 
 // proximenty sensor
 int proxThreshold = 1000;
+// int j;
+int readProx;
 
 // interval timer
 int minute = 1;
@@ -82,6 +86,16 @@ void loop() {
     proxDetect();
 
     checkSoil();
+    
+    unsigned long currentMillis - millis();
+    
+    if(currentMillis - previousMillis >readingInterval)
+    {
+        previousMillis = currentMillis;
+        
+        sendDataToCCDB(String(soilVal),"int", "moisture_level");
+	
+    }
 
 }
 
@@ -98,13 +112,24 @@ void checkSoil() {
     }
 }
 
+void sendDataToCCDB(String readingvalue, String readingdatatype, String readingvaluedescription)
+{
+    String dataToSend = "{\"readingvalue\":\"" + readingvalue + "\", \"readingdatatype\":\"" + readingdatatype + "\", \"readingvaluedescription\":\"" + readingvaluedescription + "\", \"readingdate\":\"" + String(Time.now()) + "\", \"readingtime\":\"" + String(Time.now()) + "\", \"readinghour\":\"" + String(Time.hour()) + "\"}";
+    Particle.publish("data_test", dataToSend);
+    Serial.println(dataToSend);
+    delay(1000);
+}
+
+
 void proxDetect() {
-    int readProx = analogRead(PROX_SENS);
+    readProx = analogRead(PROX_SENS);
     if (readProx > proxThreshold) {
         readSoil();
         sendFeedback(soilVal);
         Particle.publish("Detection Read", String(soilVal));
         count++;
+        // delay(5000);
+        // clearStrip();
     }
 }
 
